@@ -60,7 +60,7 @@
                 Dados Extraídos
             </h2>
             <div class="relative">
-                <textarea id="output-text" rows="12" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan" readonly></textarea>
+                <textarea id="output-text" rows="15" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan whitespace-pre" readonly></textarea>
                 <button onclick="copyToClipboard()" class="absolute top-2 right-2 bg-unimedCyan hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition shadow">Copiar</button>
             </div>
         </div>
@@ -101,7 +101,7 @@
             if (e.target.files.length > 0) processFile(e.target.files[0]);
         });
 
-        // Função para remover acentos e cedilha
+        // Limpeza de acentos para a Tabela B
         const removerAcentos = (str) => {
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         };
@@ -117,65 +117,86 @@
         }
 
         function extractData(doc) {
+            // Função utilitária segura para capturar o texto dos IDs
             const getVal = (id) => {
                 const el = doc.getElementById(id);
-                return el ? el.innerText.trim() : '';
+                if (!el) return '';
+                // Limpa espaços duplos e quebras invisíveis geradas pelo HTML
+                return el.innerText.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
             };
 
-            // Linha 1 a 15
-            const linha1 = getVal('field_18'); // Razão Social
+            // ---- EXTRAÇÃO LINHAS 1 A 17 ----
+            const linha1 = getVal('field_18'); 
             const cnaeFull = getVal('field_21'); 
-            const linha2 = cnaeFull.replace(/[^0-9]/g, ''); // CNAE números
-            const linha3 = cnaeFull.replace(/[0-9\-]/g, '').trim(); // CNAE letras
+            
+            // Linha 2: Apenas números
+            const linha2 = cnaeFull.replace(/[^\d]/g, ''); 
+            
+            // Linha 3: Remove apenas os primeiros números e traços do CNAE, mantendo as letras corretas
+            const linha3 = cnaeFull.replace(/^[\d\-\.\s]+/, '').trim(); 
+            
             const linha4 = "Funcionários + Dependentes";
-            const linha5 = getVal('field_37'); // Tipo Contratação
-            const cnpjFull = getVal('field_17'); // CNPJ
+            const linha5 = getVal('field_37'); 
+            const cnpjFull = getVal('field_17'); 
             const linha6 = cnpjFull;
 
-            // Linha 7, 13 e 14: Tabela de Corretores
+            // Busca na Tabela de Corretores (Linhas 7, 13 e 14)
             let linha7 = '';
             let taxaCorretagem = '0,00';
             let taxaAgenciamento = '0,00';
             const tabelaCorretores = doc.getElementById('customgrid_32');
-            if(tabelaCorretores) {
+            
+            if (tabelaCorretores) {
                 const rows = tabelaCorretores.querySelectorAll('tr');
-                if(rows.length > 1) {
-                    const colunasLinha1 = rows[1].querySelectorAll('td');
-                    if(colunasLinha1.length >= 3) linha7 = colunasLinha1[2].innerText.trim();
-                }
-                for(let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].querySelectorAll('td');
-                    if(cols.length > 1) {
-                        const tipo = cols[0].innerText.trim().toLowerCase();
-                        if(tipo.includes('corretagem')) taxaCorretagem = cols[1].innerText.trim();
-                        if(tipo.includes('agenciamento')) taxaAgenciamento = cols[1].innerText.trim();
+                if (rows.length > 1) {
+                    // Mapeia onde estão as colunas dinamicamente para evitar erros
+                    const headers = Array.from(rows[0].querySelectorAll('th, td')).map(th => th.innerText.trim().toLowerCase());
+                    const colNome = headers.indexOf('nome');
+                    const colTipo = headers.indexOf('tipo comissão');
+                    const colTaxa = headers.indexOf('taxa comissão');
+
+                    if (colNome !== -1) {
+                        const firstDataRow = rows[1].querySelectorAll('td');
+                        if (firstDataRow.length > colNome) linha7 = firstDataRow[colNome].innerText.trim();
+                    }
+
+                    if (colTipo !== -1 && colTaxa !== -1) {
+                        for (let i = 1; i < rows.length; i++) {
+                            const cols = rows[i].querySelectorAll('td');
+                            if (cols.length > Math.max(colTipo, colTaxa)) {
+                                const tipo = cols[colTipo].innerText.trim().toLowerCase();
+                                const taxa = cols[colTaxa].innerText.trim();
+                                if (tipo.includes('corretagem')) taxaCorretagem = taxa;
+                                if (tipo.includes('agenciamento')) taxaAgenciamento = taxa;
+                            }
+                        }
                     }
                 }
             }
 
-            const linha8 = getVal('field_3'); // Nº Cotação
-            const linha9 = getVal('field_4'); // Nº Cenário
-            const linha10 = getVal('field_14'); // ER
-            const linha11 = ''; // Em branco
-            const cnpjLimpo = cnpjFull.replace(/[\.\-\/]/g, ''); // CNPJ limpo
+            const linha8 = getVal('field_3'); 
+            const linha9 = getVal('field_4'); 
+            const linha10 = getVal('field_14'); 
+            const linha11 = ''; // Deixar em branco
+            const cnpjLimpo = cnpjFull.replace(/[^\d]/g, ''); 
             const linha12 = cnpjLimpo; 
             const linha13 = taxaCorretagem + '%';
             const linha14 = taxaAgenciamento + '%';
-            const linha15 = getVal('field_77'); // Diluição do Agenciamento
+            const linha15 = getVal('field_77'); 
             
-            // Linha 16: Lógica do Reembolso Padrão
+            // Linha 16: Tratamento do Reembolso Padrão (Ex: "1x Reembolso" -> "Reembolso 1x")
             let linha16 = getVal('field_40');
-            if (linha16.trim().toLowerCase() !== 'sem reembolso') {
-                const match = linha16.match(/(\d+x)/i);
-                if (match) {
-                    linha16 = 'Reembolso ' + match[1].toLowerCase();
+            if (linha16.toLowerCase() !== 'sem reembolso') {
+                const matchReembolso = linha16.match(/^(\d+)x\s*reembolso$/i);
+                if (matchReembolso) {
+                    linha16 = `Reembolso ${matchReembolso[1]}x`;
                 }
             }
 
             // Linha 17: Total de Vidas
             const linha17 = getVal('field_70');
 
-            // Monta o texto base
+            // Agrupa textos fixos
             let textoFinal = [
                 linha1, linha2, linha3, linha4, linha5, 
                 linha6, linha7, linha8, linha9, linha10, 
@@ -183,73 +204,75 @@
                 linha16, linha17
             ].join('\n') + '\n\n';
 
-            // Tabela A (customgrid_128) - Transposição com Regra Estrita
+            // ---- TABELA A (COTAÇÃO) ----
             const tabelaA = doc.getElementById('customgrid_128');
-            if(tabelaA) {
-                const rowsA = tabelaA.querySelectorAll('tr');
-                const planosRegra = ["Essencial", "Essencial Plus", "Essencial Plus Doc", "Pleno", "Pleno Orto", "Pleno Top"];
-                let dadosExtraidos = [];
-                let headers = [];
-
-                if(rowsA.length > 0) {
-                    const ths = rowsA[0].querySelectorAll('th');
-                    ths.forEach(th => headers.push(th.innerText.trim()));
-                }
-
-                for(let i = 1; i < rowsA.length; i++) {
-                    const tds = rowsA[i].querySelectorAll('td');
-                    if(tds.length > 0) {
-                        let linhaObj = {};
-                        headers.forEach((h, index) => {
-                            linhaObj[h] = tds[index] ? tds[index].innerText.trim() : '';
-                        });
-                        dadosExtraidos.push(linhaObj);
-                    }
-                }
-
-                // Identificar planos
-                const planosRestantes = dadosExtraidos.filter(d => !planosRegra.includes(d['Plano']));
-                const todosPlanosOrdenados = [...planosRegra, ...planosRestantes.map(d => d['Plano'])];
-
-                // Montar tabela transposta
+            if (tabelaA) {
                 textoFinal += "--- TABELA A (COTAÇÃO) ---\n";
-                headers.forEach(header => {
-                    if(header !== 'Plano') {
-                        let linhaTransposta = header + '\t';
-                        todosPlanosOrdenados.forEach(nomePlano => {
-                            const dadoPlano = dadosExtraidos.find(d => d['Plano'] === nomePlano);
-                            linhaTransposta += (dadoPlano ? dadoPlano[header] : '0') + '\t';
-                        });
-                        textoFinal += linhaTransposta.trim() + '\n';
+                const rowsA = tabelaA.querySelectorAll('tr');
+                if (rowsA.length > 0) {
+                    const planosRegra = ["Essencial", "Essencial Plus", "Essencial Plus Doc", "Pleno", "Pleno Orto", "Pleno Top"];
+                    let dadosExtraidos = [];
+                    // Captura os cabeçalhos originais
+                    let originalHeaders = Array.from(rowsA[0].querySelectorAll('th')).map(th => th.innerText.trim());
+
+                    for (let i = 1; i < rowsA.length; i++) {
+                        const tds = rowsA[i].querySelectorAll('td');
+                        if (tds.length > 0) {
+                            let rowObj = {};
+                            originalHeaders.forEach((h, index) => {
+                                rowObj[h] = tds[index] ? tds[index].innerText.trim() : '';
+                            });
+                            dadosExtraidos.push(rowObj);
+                        }
                     }
-                });
-                textoFinal += '\n';
+
+                    // Verifica se existem planos fora da regra e adiciona ao final
+                    const planosExtra = dadosExtraidos.map(d => d['Plano']).filter(p => !planosRegra.includes(p) && p);
+                    const todosPlanos = [...planosRegra, ...planosExtra];
+
+                    // INSERE O CABEÇALHO DA TABELA TRANSPOSTA COM OS NOMES DOS PLANOS
+                    textoFinal += "Métrica/Plano\t" + todosPlanos.join('\t') + "\n";
+
+                    // Transpõe os dados
+                    originalHeaders.forEach(header => {
+                        // Ignoramos a coluna "Plano" (que virou cabeçalho) e "ID_Plano" (desnecessária na exibição transposta)
+                        if (header !== 'Plano' && header !== 'ID_Plano') {
+                            let linhaTransposta = header + '\t';
+                            todosPlanos.forEach(nomePlano => {
+                                const dadoPlano = dadosExtraidos.find(d => d['Plano'] === nomePlano);
+                                linhaTransposta += (dadoPlano ? dadoPlano[header] : '0') + '\t';
+                            });
+                            textoFinal += linhaTransposta.trim() + '\n';
+                        }
+                    });
+                    textoFinal += '\n';
+                }
             }
 
-            // Tabela B (customgrid_69) - Município sem acento
+            // ---- TABELA B (DISTRIBUIÇÃO DE VIDAS) ----
             const tabelaB = doc.getElementById('customgrid_69');
-            if(tabelaB) {
+            if (tabelaB) {
                 textoFinal += "--- TABELA B (DISTRIBUIÇÃO DE VIDAS) ---\n";
                 const rowsB = tabelaB.querySelectorAll('tr');
-                rowsB.forEach(row => {
-                    let linhaStr = [];
-                    row.querySelectorAll('th, td').forEach((cell, index) => {
-                        let texto = cell.innerText.trim();
-                        // Índice 1 é o Município
-                        if(index === 1) {
-                            texto = removerAcentos(texto);
+                rowsB.forEach((row, rowIndex) => {
+                    let rowValues = [];
+                    row.querySelectorAll('th, td').forEach((cell, cellIndex) => {
+                        let text = cell.innerText.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+                        // Aplica remoção de acentos apenas nas células de dados (td) da coluna Município (index 1)
+                        if (rowIndex > 0 && cellIndex === 1 && cell.tagName.toLowerCase() === 'td') {
+                            text = removerAcentos(text);
                         }
-                        linhaStr.push(texto);
+                        rowValues.push(text);
                     });
-                    textoFinal += linhaStr.join('\t') + '\n';
+                    textoFinal += rowValues.join('\t') + '\n';
                 });
             }
 
-            // Exibir Resultados
+            // ---- FINALIZAÇÃO ----
             document.getElementById('output-text').value = textoFinal.trim();
             document.getElementById('result-section').classList.remove('hidden');
 
-            // Chamar API da Receita
+            // Chama a API da Receita Federal
             if(cnpjLimpo) fetchCnpjApi(cnpjLimpo);
         }
 
@@ -275,6 +298,7 @@
                 
                 const data = await response.json();
                 
+                // Formatação segura de Endereço
                 const logradouro = `${data.address?.street || ''}, ${data.address?.number || ''} ${data.address?.details || ''}`.trim();
                 const cidade = `${data.address?.city || ''} - ${data.address?.state || ''}`;
 
