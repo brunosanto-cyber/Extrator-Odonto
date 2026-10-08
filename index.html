@@ -4,528 +4,323 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Extrator Seguros Unimed</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        unimed: {
-                            blue: '#002B49',
-                            cyan: '#009EDB',
-                            green: '#009640'
-                        }
+                        unimedDark: '#002B49',
+                        unimedCyan: '#009EDB',
+                        unimedGreen: '#009640'
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar for textareas and content */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #009EDB; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #002B49; }
+        .drag-active {
+            border-color: #009640;
+            background-color: #f0fdf4;
+        }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
 
-    <header class="bg-unimed-blue shadow-lg text-white">
-        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="bg-white p-2 rounded-lg">
-                    <!-- Placeholder para a Logo -->
-                    <img src="https://placehold.co/150x40/ffffff/009640?text=Logo+Seguros+Unimed" alt="Seguros Unimed" class="h-10 object-contain">
+    <!-- Cabeçalho -->
+    <header class="bg-unimedDark text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <!-- Espaço para logo.png -->
+                <div class="bg-white rounded p-1 h-12 w-32 flex items-center justify-center overflow-hidden">
+                    <img src="logo.png" alt="Logo Seguros Unimed" class="h-10 object-contain" onerror="this.outerHTML='<span class=\'text-unimedDark font-bold text-xs\'>[LOGO.PNG]</span>'">
                 </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-unimed-cyan">Ferramenta de Extração de Dados</h1>
-                    <p class="text-sm text-gray-300">Processador Automático de Relatórios HTML</p>
-                </div>
+                <h1 class="text-2xl font-semibold">Extrator de Relatórios - Odonto</h1>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-6 py-8 flex flex-col gap-8">
+    <main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
         
-        <section class="bg-white rounded-xl shadow-md p-8 border-t-4 border-unimed-green">
-            <h2 class="text-xl font-semibold mb-4 text-unimed-blue">Importar Relatório</h2>
-            
-            <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center bg-gray-50 transition-all duration-300 hover:bg-blue-50 hover:border-unimed-cyan cursor-pointer flex flex-col items-center justify-center gap-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-unimed-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <div class="text-gray-600">
-                    <span class="font-semibold text-unimed-blue">Clique para selecionar</span> ou arraste o arquivo HTML para cá
-                </div>
-                <p class="text-xs text-gray-500">Apenas arquivos .html</p>
-                <input type="file" id="fileInput" accept=".html" class="hidden">
+        <!-- Drag and Drop Area -->
+        <div id="drop-zone" class="border-4 border-dashed border-gray-300 rounded-xl p-10 text-center bg-white transition duration-300 ease-in-out cursor-pointer hover:border-unimedCyan">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="text-lg text-gray-600 font-medium">Arraste e solte o arquivo HTML do relatório aqui</p>
+            <p class="text-sm text-gray-500 mt-2">ou clique para selecionar o arquivo</p>
+            <input type="file" id="file-input" class="hidden" accept=".html, .htm" />
+        </div>
+
+        <!-- Área de Resultados (Texto Extraído) -->
+        <div id="result-section" class="hidden bg-white shadow-lg rounded-xl p-6 border-t-4 border-unimedGreen">
+            <h2 class="text-xl font-bold text-unimedDark mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-unimedGreen" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Dados Extraídos
+            </h2>
+            <div class="relative">
+                <textarea id="output-text" rows="12" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan" readonly></textarea>
+                <button onclick="copyToClipboard()" class="absolute top-2 right-2 bg-unimedCyan hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition shadow">Copiar</button>
             </div>
-            <div id="fileNameDisplay" class="mt-4 text-sm font-medium text-unimed-green hidden text-center"></div>
-        </section>
+        </div>
 
-        <section id="extractionResultSection" class="hidden flex-col gap-4">
-            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-unimed-cyan">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-unimed-blue">Texto Extraído</h2>
-                    <button id="copyBtn" class="bg-unimed-cyan hover:bg-unimed-blue text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        Copiar Tudo
-                    </button>
-                </div>
-                <textarea id="extractedText" class="w-full h-64 p-4 text-sm font-mono border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-unimed-cyan whitespace-pre" readonly></textarea>
+        <!-- Painel da API (Dados do CNPJ) -->
+        <div id="api-panel" class="hidden bg-white shadow-lg rounded-xl overflow-hidden border-t-4 border-unimedCyan">
+            <div class="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-unimedDark flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-unimedCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                    Dados da Empresa (Receita Federal)
+                </h2>
+                <span id="api-loading" class="text-sm text-unimedCyan font-semibold animate-pulse hidden">Carregando dados...</span>
             </div>
-        </section>
-
-        <section id="apiResultSection" class="hidden flex-col gap-4">
-            <div class="bg-white rounded-xl shadow-md border-t-4 border-unimed-blue overflow-hidden">
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-unimed-blue">Dados do CNPJ (Receita Federal)</h2>
-                    <span id="apiStatusBadge" class="px-3 py-1 rounded-full text-xs font-bold text-white bg-gray-400">Aguardando</span>
-                </div>
-                
-                <div id="apiContentLoader" class="p-12 flex flex-col items-center justify-center gap-4 hidden">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-unimed-cyan"></div>
-                    <p class="text-unimed-blue font-medium text-lg">Carregando dados da API...</p>
-                </div>
-
-                <div id="apiContentError" class="p-8 text-center hidden">
-                    <p class="text-red-500 font-medium text-lg" id="apiErrorMsg">Erro ao carregar dados.</p>
-                </div>
-
-                <div id="apiContentData" class="p-6 hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                        <!-- Info Cards populated via JS -->
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Razão Social</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_razao">-</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Nome Fantasia</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_fantasia">-</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">CNPJ</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_cnpj">-</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Data de Abertura</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_abertura">-</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Natureza Jurídica</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_natureza">-</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Capital Social</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_capital">-</p>
-                        </div>
-                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 lg:col-span-3">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Atividade Principal</p>
-                            <p class="text-sm font-medium text-unimed-blue" id="api_atividade">-</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-lg font-semibold text-unimed-green mb-4 border-b pb-2">Contato e Endereço</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="p-4 border border-gray-200 rounded-lg">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">Endereço Completo</p>
-                            <p class="text-sm font-medium text-gray-800 mt-1" id="api_endereco">-</p>
-                            <div class="flex gap-4 mt-2">
-                                <div>
-                                    <p class="text-xs text-gray-400">Cidade/UF</p>
-                                    <p class="text-sm font-medium text-gray-800" id="api_cidade">-</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-400">CEP</p>
-                                    <p class="text-sm font-medium text-gray-800" id="api_cep">-</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-4 border border-gray-200 rounded-lg flex flex-col justify-center">
-                            <p class="text-xs text-gray-500 uppercase font-semibold">E-mail Principal</p>
-                            <p class="text-sm font-medium text-gray-800 mt-1 break-all" id="api_email">-</p>
-                        </div>
-                    </div>
-
-                    <h3 class="text-lg font-semibold text-unimed-cyan mb-4 border-b pb-2">Quadro Societário (QSA)</h3>
-                    <div id="qsaContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- QSA Cards will be injected here -->
-                    </div>
-                </div>
+            <div id="api-content" class="p-6">
+                <!-- Conteúdo da API será injetado aqui -->
             </div>
-        </section>
+        </div>
+
     </main>
 
     <script>
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('fileInput');
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
-        const extractedText = document.getElementById('extractedText');
-        const copyBtn = document.getElementById('copyBtn');
-        
-        // Sections
-        const extractionResultSection = document.getElementById('extractionResultSection');
-        const apiResultSection = document.getElementById('apiResultSection');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
 
-        // Drag and Drop Events
-        dropzone.addEventListener('click', () => fileInput.click());
-        
-        dropzone.addEventListener('dragover', (e) => {
+        // Eventos de Drag & Drop
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropzone.classList.add('bg-blue-100', 'border-unimed-cyan');
+            dropZone.classList.add('drag-active');
         });
-        
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('bg-blue-100', 'border-unimed-cyan');
-        });
-        
-        dropzone.addEventListener('drop', (e) => {
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
+        dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropzone.classList.remove('bg-blue-100', 'border-unimed-cyan');
-            if (e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
-            }
+            dropZone.classList.remove('drag-active');
+            if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]);
         });
-
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
+            if (e.target.files.length > 0) processFile(e.target.files[0]);
         });
 
-        copyBtn.addEventListener('click', () => {
-            extractedText.select();
-            document.execCommand('copy');
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = "Copiado!";
-            copyBtn.classList.remove('bg-unimed-cyan');
-            copyBtn.classList.add('bg-unimed-green');
-            setTimeout(() => {
-                copyBtn.innerText = originalText;
-                copyBtn.classList.add('bg-unimed-cyan');
-                copyBtn.classList.remove('bg-unimed-green');
-            }, 2000);
-        });
-
-        function handleFile(file) {
-            if (file.type !== "text/html" && !file.name.endsWith(".html")) {
-                alert("Por favor, selecione um arquivo HTML válido.");
-                return;
-            }
-
-            fileNameDisplay.innerText = `Arquivo carregado: ${file.name}`;
-            fileNameDisplay.classList.remove('hidden');
-
+        function processFile(file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const htmlContent = e.target.result;
-                processHTML(htmlContent);
-            };
-            reader.readAsText(file, "UTF-8"); // Assume UTF-8 or ISO based on file, default UTF-8
-        }
-
-        // Helper to safely extract text from parsed DOM
-        const getText = (doc, id) => {
-            const el = doc.getElementById(id);
-            return el ? el.innerText.trim() : "";
-        };
-
-        function processHTML(htmlContent) {
-            try {
+            reader.onload = (e) => {
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, 'text/html');
-
-                let lines = [];
-                
-                // --- Linha 1 a 15 ---
-                
-                // Linha 1: Razão Social
-                lines.push(getText(doc, 'field_18'));
-                
-                // Linha 2 e 3: CNAE
-                const cnaeFull = getText(doc, 'field_21');
-                const cnaeNumbers = cnaeFull.replace(/\D/g, ''); // Somente números
-                const cnaeLetters = cnaeFull.replace(/[0-9\-\.]/g, '').trim(); // Remove nums e traços/pontos
-                lines.push(cnaeNumbers);
-                lines.push(cnaeLetters);
-                
-                // Linha 4: Fixo
-                lines.push("Funcionários + Dependentes");
-                
-                // Linha 5 e 6
-                lines.push(getText(doc, 'field_37'));
-                const cnpjFull = getText(doc, 'field_17');
-                lines.push(cnpjFull);
-                
-                // Linha 7, 13 e 14: Tabela de Corretores (customgrid_32)
-                let primeiroNomeCorretor = "";
-                let taxaCorretagem = "0,00%";
-                let taxaAgenciamento = "0,00%";
-                const grid32 = doc.getElementById('customgrid_32');
-                if (grid32) {
-                    const rows = grid32.querySelectorAll('tr');
-                    let foundName = false;
-                    
-                    // Start from 1 to skip header
-                    for (let i = 1; i < rows.length; i++) {
-                        const cells = rows[i].querySelectorAll('td');
-                        if (cells.length >= 3) {
-                            const tipo = cells[0].innerText.trim();
-                            const taxa = cells[1].innerText.trim();
-                            const nome = cells[2].innerText.trim();
-                            
-                            if (!foundName && nome) {
-                                primeiroNomeCorretor = nome;
-                                foundName = true;
-                            }
-                            
-                            if (tipo.toLowerCase() === "corretagem") taxaCorretagem = taxa + "%";
-                            if (tipo.toLowerCase() === "agenciamento") taxaAgenciamento = taxa + "%";
-                        }
-                    }
-                }
-                
-                lines.push(primeiroNomeCorretor);
-                
-                // Linha 8, 9, 10
-                lines.push(getText(doc, 'field_3'));
-                lines.push(getText(doc, 'field_4'));
-                lines.push(getText(doc, 'field_14'));
-                
-                // Linha 11: Branco
-                lines.push("");
-                
-                // Linha 12: CNPJ Limpo
-                const cnpjLimpo = cnpjFull.replace(/\D/g, '');
-                lines.push(cnpjLimpo);
-                
-                // Linha 13, 14 e 15
-                lines.push(taxaCorretagem);
-                lines.push(taxaAgenciamento);
-                lines.push(getText(doc, 'field_77'));
-
-                let finalOutput = lines.join('\n') + '\n\n';
-
-                // --- Tabela A (customgrid_128) ---
-                const grid128 = doc.getElementById('customgrid_128');
-                if (grid128) {
-                    finalOutput += processTableA(grid128) + '\n\n';
-                }
-
-                // --- Tabela B (customgrid_69) ---
-                const grid69 = doc.getElementById('customgrid_69');
-                if (grid69) {
-                    finalOutput += processTableB(grid69);
-                }
-
-                // Show extracted data
-                extractedText.value = finalOutput;
-                extractionResultSection.classList.remove('hidden');
-                extractionResultSection.classList.add('flex');
-
-                // Trigger API Fetch if CNPJ is valid
-                if (cnpjLimpo && cnpjLimpo.length === 14) {
-                    fetchCNPJData(cnpjLimpo);
-                } else {
-                    showAPIError("CNPJ inválido ou não encontrado para consultar na API.");
-                }
-
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao processar o arquivo HTML. Verifique se o formato está correto.");
-            }
+                const doc = parser.parseFromString(e.target.result, 'text/html');
+                extractData(doc);
+            };
+            reader.readAsText(file);
         }
 
-        function processTableA(tableEl) {
-            const rows = tableEl.querySelectorAll('tr');
-            if (rows.length < 2) return "";
+        function extractData(doc) {
+            const getVal = (id) => {
+                const el = doc.getElementById(id);
+                return el ? el.innerText.trim() : '';
+            };
 
-            // Target plans exactly in this order
-            const targetPlans = ["Essencial", "Essencial Plus", "Essencial Plus Doc", "Pleno", "Pleno Orto", "Pleno Top"];
-            
-            // Extract headers (skipping ID_Plano [0] and Plano [1])
-            const headerCells = rows[0].querySelectorAll('th, td');
-            let metricNames = [];
-            for(let i = 2; i < headerCells.length; i++) {
-                metricNames.push(headerCells[i].innerText.trim());
-            }
+            // Linha 1 a 16
+            const linha1 = getVal('field_18'); // Razão Social
+            const cnaeFull = getVal('field_21'); 
+            const linha2 = cnaeFull.replace(/[^0-9]/g, ''); // CNAE números
+            const linha3 = cnaeFull.replace(/[0-9\-]/g, '').trim(); // CNAE letras
+            const linha4 = "Funcionários + Dependentes";
+            const linha5 = getVal('field_37'); // Tipo Contratação
+            const cnpjFull = getVal('field_17'); // CNPJ
+            const linha6 = cnpjFull;
 
-            // Map data by plan name
-            let planData = {};
-            let otherPlans = []; // To keep track of plans not in the target list
-
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].querySelectorAll('td');
-                if (cells.length >= 2) {
-                    const planName = cells[1].innerText.trim();
-                    let values = [];
-                    for(let j = 2; j < cells.length; j++) {
-                        values.push(cells[j].innerText.trim());
-                    }
-                    
-                    planData[planName] = values;
-                    if (!targetPlans.includes(planName)) {
-                        otherPlans.push(planName);
+            // Linha 7, 13 e 14: Tabela de Corretores
+            let linha7 = '';
+            let taxaCorretagem = '0,00';
+            let taxaAgenciamento = '0,00';
+            const tabelaCorretores = doc.getElementById('customgrid_32');
+            if(tabelaCorretores) {
+                const rows = tabelaCorretores.querySelectorAll('tr');
+                if(rows.length > 1) {
+                    const colunasLinha1 = rows[1].querySelectorAll('td');
+                    if(colunasLinha1.length >= 3) linha7 = colunasLinha1[2].innerText.trim();
+                }
+                for(let i = 1; i < rows.length; i++) {
+                    const cols = rows[i].querySelectorAll('td');
+                    if(cols.length > 1) {
+                        const tipo = cols[0].innerText.trim().toLowerCase();
+                        if(tipo.includes('corretagem')) taxaCorretagem = cols[1].innerText.trim();
+                        if(tipo.includes('agenciamento')) taxaAgenciamento = cols[1].innerText.trim();
                     }
                 }
             }
 
-            // All columns to render (Target + Others)
-            const allColumnsToRender = [...targetPlans, ...otherPlans];
+            const linha8 = getVal('field_3'); // Nº Cotação
+            const linha9 = getVal('field_4'); // Nº Cenário
+            const linha10 = getVal('field_14'); // ER
+            const linha11 = ''; // Em branco (Sexo Feminino ausente)
+            const cnpjLimpo = cnpjFull.replace(/[\.\-\/]/g, ''); // CNPJ limpo
+            const linha12 = cnpjLimpo; 
+            const linha13 = taxaCorretagem + '%';
+            const linha14 = taxaAgenciamento + '%';
+            const linha15 = getVal('field_77'); // Diluição do Agenciamento
+            const linha16 = getVal('field_40'); // Reembolso Padrão
 
-            // Build Transposed Result
-            let resultLines = [];
-            
-            // First row: Empty cell then plan names
-            resultLines.push("\t" + allColumnsToRender.join("\t"));
+            let textoFinal = [linha1, linha2, linha3, linha4, linha5, linha6, linha7, linha8, linha9, linha10, linha11, linha12, linha13, linha14, linha15, linha16].join('\n') + '\n\n';
 
-            // Subsequent rows: Metric Name then value for each plan
-            for (let mIndex = 0; mIndex < metricNames.length; mIndex++) {
-                let rowStr = metricNames[mIndex];
-                
-                for (let plan of allColumnsToRender) {
-                    if (planData[plan] && planData[plan][mIndex] !== undefined) {
-                        rowStr += "\t" + planData[plan][mIndex];
-                    } else {
-                        rowStr += "\t0"; // Fill with 0 if plan or metric doesn't exist
+            // Tabela A (customgrid_128) - Transposição com Regra Estrita
+            const tabelaA = doc.getElementById('customgrid_128');
+            if(tabelaA) {
+                const rowsA = tabelaA.querySelectorAll('tr');
+                const planosRegra = ["Essencial", "Essencial Plus", "Essencial Plus Doc", "Pleno", "Pleno Orto", "Pleno Top"];
+                let dadosExtraidos = [];
+                let headers = [];
+
+                if(rowsA.length > 0) {
+                    const ths = rowsA[0].querySelectorAll('th');
+                    ths.forEach(th => headers.push(th.innerText.trim()));
+                }
+
+                for(let i = 1; i < rowsA.length; i++) {
+                    const tds = rowsA[i].querySelectorAll('td');
+                    if(tds.length > 0) {
+                        let linhaObj = {};
+                        headers.forEach((h, index) => {
+                            linhaObj[h] = tds[index] ? tds[index].innerText.trim() : '';
+                        });
+                        dadosExtraidos.push(linhaObj);
                     }
                 }
-                resultLines.push(rowStr);
-            }
 
-            return resultLines.join('\n');
-        }
+                // Identificar planos presentes e não presentes
+                const planosRestantes = dadosExtraidos.filter(d => !planosRegra.includes(d['Plano']));
+                const todosPlanosOrdenados = [...planosRegra, ...planosRestantes.map(d => d['Plano'])];
 
-        function processTableB(tableEl) {
-            let resultLines = [];
-            const rows = tableEl.querySelectorAll('tr');
-            for (let i = 0; i < rows.length; i++) {
-                // Ignore empty rows
-                if(rows[i].innerText.trim() === '') continue;
-
-                let rowStr = [];
-                const cells = rows[i].querySelectorAll('th, td');
-                cells.forEach(cell => {
-                    rowStr.push(cell.innerText.trim());
+                // Montar tabela transposta
+                textoFinal += "--- TABELA A (COTAÇÃO) ---\n";
+                // Transpor cada cabeçalho (exceto o nome do Plano, que virou coluna)
+                headers.forEach(header => {
+                    if(header !== 'Plano') {
+                        let linhaTransposta = header + '\t';
+                        todosPlanosOrdenados.forEach(nomePlano => {
+                            const dadoPlano = dadosExtraidos.find(d => d['Plano'] === nomePlano);
+                            linhaTransposta += (dadoPlano ? dadoPlano[header] : '0') + '\t';
+                        });
+                        textoFinal += linhaTransposta.trim() + '\n';
+                    }
                 });
-                resultLines.push(rowStr.join('\t'));
+                textoFinal += '\n';
             }
-            return resultLines.join('\n');
+
+            // Tabela B (customgrid_69) - Cópia exata com Tabs
+            const tabelaB = doc.getElementById('customgrid_69');
+            if(tabelaB) {
+                textoFinal += "--- TABELA B (DISTRIBUIÇÃO DE VIDAS) ---\n";
+                const rowsB = tabelaB.querySelectorAll('tr');
+                rowsB.forEach(row => {
+                    let linhaStr = [];
+                    row.querySelectorAll('th, td').forEach(cell => {
+                        linhaStr.push(cell.innerText.trim());
+                    });
+                    textoFinal += linhaStr.join('\t') + '\n';
+                });
+            }
+
+            // Exibir Resultados
+            document.getElementById('output-text').value = textoFinal.trim();
+            document.getElementById('result-section').classList.remove('hidden');
+
+            // Chamar API
+            if(cnpjLimpo) fetchCnpjApi(cnpjLimpo);
         }
 
-        async function fetchCNPJData(cnpj) {
-            apiResultSection.classList.remove('hidden');
-            apiResultSection.classList.add('flex');
-            
-            document.getElementById('apiContentLoader').classList.remove('hidden');
-            document.getElementById('apiContentData').classList.add('hidden');
-            document.getElementById('apiContentError').classList.add('hidden');
-            
-            const badge = document.getElementById('apiStatusBadge');
-            badge.className = "px-3 py-1 rounded-full text-xs font-bold text-white bg-blue-500 animate-pulse";
-            badge.innerText = "Consultando...";
+        function copyToClipboard() {
+            const textarea = document.getElementById('output-text');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Dados copiados para a área de transferência!');
+        }
+
+        async function fetchCnpjApi(cnpj) {
+            const panel = document.getElementById('api-panel');
+            const content = document.getElementById('api-content');
+            const loading = document.getElementById('api-loading');
+
+            panel.classList.remove('hidden');
+            content.innerHTML = '';
+            loading.classList.remove('hidden');
 
             try {
-                // Using public API OpenCNPJA
                 const response = await fetch(`https://open.cnpja.com/office/${cnpj}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
+                if(!response.ok) throw new Error('Falha ao buscar dados da API. Status: ' + response.status);
                 
                 const data = await response.json();
-                renderAPIData(data);
                 
-                badge.className = "px-3 py-1 rounded-full text-xs font-bold text-white bg-unimed-green";
-                badge.innerText = "Sucesso";
+                // Tratar endereços
+                const logradouro = `${data.address?.street || ''}, ${data.address?.number || ''} ${data.address?.details || ''}`.trim();
+                const cidade = `${data.address?.city || ''} - ${data.address?.state || ''}`;
 
-                document.getElementById('apiContentLoader').classList.add('hidden');
-                document.getElementById('apiContentData').classList.remove('hidden');
+                // HTML Base do retorno
+                let html = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Razão Social</p>
+                            <p class="font-bold text-lg text-gray-800">${data.company?.name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Nome Fantasia</p>
+                            <p class="font-bold text-lg text-gray-800">${data.alias || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">CNPJ / Situação</p>
+                            <p class="font-semibold text-gray-800">${data.taxId || 'N/A'} <span class="bg-unimedGreen text-white text-xs px-2 py-1 rounded ml-2">${data.status?.text || 'N/A'}</span></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Data de Abertura</p>
+                            <p class="font-semibold text-gray-800">${data.founded || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Natureza Jurídica</p>
+                            <p class="font-semibold text-gray-800">${data.company?.nature?.text || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Capital Social</p>
+                            <p class="font-semibold text-gray-800">R$ ${data.company?.equity ? Number(data.company.equity).toLocaleString('pt-BR') : 'N/A'}</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <p class="text-sm text-gray-500 uppercase">Atividade Principal (CNAE)</p>
+                            <p class="font-semibold text-gray-800">${data.mainActivity?.id || ''} - ${data.mainActivity?.text || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Logradouro / CEP</p>
+                            <p class="font-semibold text-gray-800">${logradouro} (CEP: ${data.address?.zip || 'N/A'})</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase">Cidade / E-mail</p>
+                            <p class="font-semibold text-gray-800">${cidade} <br/> <a href="mailto:${data.emails?.[0]?.address || ''}" class="text-unimedCyan hover:underline">${data.emails?.[0]?.address || 'N/A'}</a></p>
+                        </div>
+                    </div>
+                `;
+
+                // Renderizar QSA (Quadro Societário)
+                if(data.company?.members && data.company.members.length > 0) {
+                    html += `<div class="mt-8">
+                                <h3 class="text-lg font-bold text-unimedDark mb-4 border-b pb-2">Quadro Societário (QSA)</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">`;
+                    data.company.members.forEach(member => {
+                        html += `
+                            <div class="bg-gray-100 p-4 rounded-lg border border-gray-200 shadow-sm">
+                                <p class="font-bold text-gray-800">${member.person?.name || 'N/A'}</p>
+                                <p class="text-sm text-gray-600">${member.role?.text || 'Sócio'}</p>
+                            </div>
+                        `;
+                    });
+                    html += `</div></div>`;
+                }
+
+                content.innerHTML = html;
 
             } catch (error) {
-                console.error("API Fetch Error:", error);
-                showAPIError("Não foi possível carregar os dados da Receita Federal. O CNPJ pode estar incorreto ou a API está indisponível.");
-            }
-        }
-
-        function showAPIError(msg) {
-            document.getElementById('apiContentLoader').classList.add('hidden');
-            document.getElementById('apiContentData').classList.add('hidden');
-            
-            const errorContainer = document.getElementById('apiContentError');
-            errorContainer.classList.remove('hidden');
-            document.getElementById('apiErrorMsg').innerText = msg;
-
-            const badge = document.getElementById('apiStatusBadge');
-            badge.className = "px-3 py-1 rounded-full text-xs font-bold text-white bg-red-500";
-            badge.innerText = "Falha";
-        }
-
-        // Helper to format currency
-        const formatCurrency = (value) => {
-            if(value === undefined || value === null) return "-";
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-        };
-
-        // Helper to format Date (YYYY-MM-DD to DD/MM/YYYY)
-        const formatDate = (dateString) => {
-            if(!dateString) return "-";
-            const d = new Date(dateString);
-            return d.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
-        };
-
-        function renderAPIData(data) {
-            // General Info
-            document.getElementById('api_razao').innerText = data.company?.name || '-';
-            document.getElementById('api_fantasia').innerText = data.alias || '-';
-            document.getElementById('api_cnpj').innerText = data.taxId || '-';
-            document.getElementById('api_abertura').innerText = formatDate(data.founded);
-            document.getElementById('api_natureza').innerText = data.company?.nature?.text || '-';
-            document.getElementById('api_capital').innerText = formatCurrency(data.company?.equity);
-            document.getElementById('api_atividade').innerText = data.mainCategory?.text || '-';
-
-            // Address & Contact
-            const addr = data.address;
-            if(addr) {
-                const logradouro = `${addr.street || ''}, ${addr.number || 'S/N'}${addr.details ? ' - ' + addr.details : ''} - ${addr.district || ''}`;
-                document.getElementById('api_endereco').innerText = logradouro;
-                document.getElementById('api_cidade').innerText = `${addr.city || ''} / ${addr.state || ''}`;
-                document.getElementById('api_cep').innerText = addr.zip || '-';
-            }
-
-            const emails = data.emails;
-            if(emails && emails.length > 0) {
-                document.getElementById('api_email').innerText = emails[0].address || '-';
-            }
-
-            // QSA
-            const qsaContainer = document.getElementById('qsaContainer');
-            qsaContainer.innerHTML = ''; // Clear previous
-            
-            const members = data.company?.members;
-            if (members && members.length > 0) {
-                members.forEach(member => {
-                    const name = member.person?.name || '-';
-                    const role = member.role?.text || '-';
-                    
-                    const card = document.createElement('div');
-                    card.className = "bg-white p-4 rounded-lg shadow-sm border-l-4 border-unimed-cyan border-t border-r border-b";
-                    card.innerHTML = `
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-50 p-2 rounded-full mt-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-unimed-blue" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-gray-800">${name}</p>
-                                <p class="text-xs text-gray-500 mt-1">${role}</p>
-                            </div>
-                        </div>
-                    `;
-                    qsaContainer.appendChild(card);
-                });
-            } else {
-                qsaContainer.innerHTML = '<p class="text-sm text-gray-500 italic col-span-full">Nenhum sócio ou administrador encontrado.</p>';
+                content.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded border border-red-200">
+                    <p class="font-bold">Erro ao consultar a API pública.</p>
+                    <p class="text-sm mt-1">${error.message}</p>
+                    <p class="text-xs mt-2 text-red-500">Nota: O CNPJ extraído pode ser inválido ou a API atingiu o limite de requisições gratuitas.</p>
+                </div>`;
+            } finally {
+                loading.classList.add('hidden');
             }
         }
     </script>
