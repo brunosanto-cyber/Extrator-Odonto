@@ -122,7 +122,7 @@
                 return el ? el.innerText.trim() : '';
             };
 
-            // Linha 1 a 16
+            // Linhas de 1 a 15
             const linha1 = getVal('field_18'); // Razão Social
             const cnaeFull = getVal('field_21'); 
             const linha2 = cnaeFull.replace(/[^0-9]/g, ''); // CNAE números
@@ -132,7 +132,7 @@
             const cnpjFull = getVal('field_17'); // CNPJ
             const linha6 = cnpjFull;
 
-            // Linha 7, 13 e 14: Tabela de Corretores
+            // Linhas 7, 13 e 14: Tabela de Corretores
             let linha7 = '';
             let taxaCorretagem = '0,00';
             let taxaAgenciamento = '0,00';
@@ -172,7 +172,10 @@
                 }
             }
 
-            let textoFinal = [linha1, linha2, linha3, linha4, linha5, linha6, linha7, linha8, linha9, linha10, linha11, linha12, linha13, linha14, linha15, linha16].join('\n') + '\n\n';
+            // Total de Vidas (Linha 17)
+            const linha17 = getVal('field_70');
+
+            let textoFinal = [linha1, linha2, linha3, linha4, linha5, linha6, linha7, linha8, linha9, linha10, linha11, linha12, linha13, linha14, linha15, linha16, linha17].join('\n') + '\n\n';
 
             // Tabela A (customgrid_128) - Transposição com Regra Estrita
             const tabelaA = doc.getElementById('customgrid_128');
