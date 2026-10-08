@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Extrator Seguros Unimed</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -28,11 +27,9 @@
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-gray-800">
 
-    <!-- Cabeçalho -->
     <header class="bg-unimedDark text-white shadow-md">
         <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <!-- Espaço para logo.png -->
                 <div class="bg-white rounded p-1 h-12 w-32 flex items-center justify-center overflow-hidden">
                     <img src="logo.png" alt="Logo Seguros Unimed" class="h-10 object-contain" onerror="this.outerHTML='<span class=\'text-unimedDark font-bold text-xs\'>[LOGO.PNG]</span>'">
                 </div>
@@ -43,7 +40,6 @@
 
     <main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
         
-        <!-- Drag and Drop Area -->
         <div id="drop-zone" class="border-4 border-dashed border-gray-300 rounded-xl p-10 text-center bg-white transition duration-300 ease-in-out cursor-pointer hover:border-unimedCyan">
             <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -53,19 +49,17 @@
             <input type="file" id="file-input" class="hidden" accept=".html, .htm" />
         </div>
 
-        <!-- Área de Resultados (Texto Extraído) -->
         <div id="result-section" class="hidden bg-white shadow-lg rounded-xl p-6 border-t-4 border-unimedGreen">
             <h2 class="text-xl font-bold text-unimedDark mb-4 flex items-center">
                 <svg class="w-6 h-6 mr-2 text-unimedGreen" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 Dados Extraídos
             </h2>
             <div class="relative">
-                <textarea id="output-text" rows="18" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan whitespace-pre" readonly></textarea>
+                <textarea id="output-text" rows="25" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan whitespace-pre" readonly></textarea>
                 <button onclick="copyToClipboard()" class="absolute top-2 right-2 bg-unimedCyan hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition shadow">Copiar</button>
             </div>
         </div>
 
-        <!-- Painel da API (Dados do CNPJ) -->
         <div id="api-panel" class="hidden bg-white shadow-lg rounded-xl overflow-hidden border-t-4 border-unimedCyan">
             <div class="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-unimedDark flex items-center">
@@ -75,8 +69,7 @@
                 <span id="api-loading" class="text-sm text-unimedCyan font-semibold animate-pulse hidden">Carregando dados...</span>
             </div>
             <div id="api-content" class="p-6">
-                <!-- Conteúdo da API será injetado aqui -->
-            </div>
+                </div>
         </div>
 
     </main>
@@ -212,12 +205,12 @@
             }
 
             // Linha 19: Incluir na Campanha Mais Sorrisos
-            const linha19 = getVal('field_64');
+            const linha19 = getVal('field_64') || 'Não identificado';
 
             // Linha 20: Incluir Assistência SOS de Urgência
-            const linha20 = getVal('field_65');
+            const linha20 = getVal('field_65') || 'Não identificado';
 
-            // Agrupa textos fixos
+            // Agrupa textos fixos com a quebra exata
             let textoFinal = [
                 linha1, linha2, linha3, linha4, linha5, 
                 linha6, linha7, linha8, linha9, linha10, 
