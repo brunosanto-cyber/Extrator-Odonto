@@ -101,6 +101,11 @@
             if (e.target.files.length > 0) processFile(e.target.files[0]);
         });
 
+        // Função global para remover acentos e caracteres especiais como cedilha
+        const removerAcentos = (str) => {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        };
+
         function processFile(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -191,7 +196,6 @@
 
                 // Montar tabela transposta
                 textoFinal += "--- TABELA A (COTAÇÃO) ---\n";
-                // Transpor cada cabeçalho (exceto o nome do Plano, que virou coluna)
                 headers.forEach(header => {
                     if(header !== 'Plano') {
                         let linhaTransposta = header + '\t';
@@ -205,15 +209,20 @@
                 textoFinal += '\n';
             }
 
-            // Tabela B (customgrid_69) - Cópia exata com Tabs
+            // Tabela B (customgrid_69) - Cópia com Tabs e sem acentos na coluna Município
             const tabelaB = doc.getElementById('customgrid_69');
             if(tabelaB) {
                 textoFinal += "--- TABELA B (DISTRIBUIÇÃO DE VIDAS) ---\n";
                 const rowsB = tabelaB.querySelectorAll('tr');
                 rowsB.forEach(row => {
                     let linhaStr = [];
-                    row.querySelectorAll('th, td').forEach(cell => {
-                        linhaStr.push(cell.innerText.trim());
+                    row.querySelectorAll('th, td').forEach((cell, index) => {
+                        let texto = cell.innerText.trim();
+                        // O índice 1 corresponde à coluna "Município"
+                        if(index === 1) {
+                            texto = removerAcentos(texto);
+                        }
+                        linhaStr.push(texto);
                     });
                     textoFinal += linhaStr.join('\t') + '\n';
                 });
