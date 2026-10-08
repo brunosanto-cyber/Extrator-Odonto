@@ -162,7 +162,14 @@
             const linha13 = taxaCorretagem + '%';
             const linha14 = taxaAgenciamento + '%';
             const linha15 = getVal('field_77'); // Diluição do Agenciamento
-            const linha16 = getVal('field_40'); // Reembolso Padrão
+            
+            // Lógica do Reembolso Padrão (Linha 16)
+            let linha16 = getVal('field_40');
+            const regexReembolso = /^(\d+x)\s+reembolso$/i;
+            if (regexReembolso.test(linha16)) {
+                // Inverte "2x Reembolso" para "Reembolso 2x"
+                linha16 = linha16.replace(regexReembolso, 'Reembolso $1');
+            }
 
             let textoFinal = [linha1, linha2, linha3, linha4, linha5, linha6, linha7, linha8, linha9, linha10, linha11, linha12, linha13, linha14, linha15, linha16].join('\n') + '\n\n';
 
