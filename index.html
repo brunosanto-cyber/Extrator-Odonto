@@ -101,7 +101,7 @@
             if (e.target.files.length > 0) processFile(e.target.files[0]);
         });
 
-        // Função global para remover acentos e caracteres especiais como cedilha
+        // Função para remover acentos e cedilha
         const removerAcentos = (str) => {
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         };
@@ -122,7 +122,7 @@
                 return el ? el.innerText.trim() : '';
             };
 
-            // Linhas de 1 a 15
+            // Linha 1 a 15
             const linha1 = getVal('field_18'); // Razão Social
             const cnaeFull = getVal('field_21'); 
             const linha2 = cnaeFull.replace(/[^0-9]/g, ''); // CNAE números
@@ -132,7 +132,7 @@
             const cnpjFull = getVal('field_17'); // CNPJ
             const linha6 = cnpjFull;
 
-            // Linhas 7, 13 e 14: Tabela de Corretores
+            // Linha 7, 13 e 14: Tabela de Corretores
             let linha7 = '';
             let taxaCorretagem = '0,00';
             let taxaAgenciamento = '0,00';
@@ -156,14 +156,14 @@
             const linha8 = getVal('field_3'); // Nº Cotação
             const linha9 = getVal('field_4'); // Nº Cenário
             const linha10 = getVal('field_14'); // ER
-            const linha11 = ''; // Em branco (Sexo Feminino ausente)
+            const linha11 = ''; // Em branco
             const cnpjLimpo = cnpjFull.replace(/[\.\-\/]/g, ''); // CNPJ limpo
             const linha12 = cnpjLimpo; 
             const linha13 = taxaCorretagem + '%';
             const linha14 = taxaAgenciamento + '%';
             const linha15 = getVal('field_77'); // Diluição do Agenciamento
             
-            // Lógica do Reembolso Padrão (Linha 16)
+            // Linha 16: Lógica do Reembolso Padrão
             let linha16 = getVal('field_40');
             if (linha16.trim().toLowerCase() !== 'sem reembolso') {
                 const match = linha16.match(/(\d+x)/i);
@@ -172,10 +172,16 @@
                 }
             }
 
-            // Total de Vidas (Linha 17)
+            // Linha 17: Total de Vidas
             const linha17 = getVal('field_70');
 
-            let textoFinal = [linha1, linha2, linha3, linha4, linha5, linha6, linha7, linha8, linha9, linha10, linha11, linha12, linha13, linha14, linha15, linha16, linha17].join('\n') + '\n\n';
+            // Monta o texto base
+            let textoFinal = [
+                linha1, linha2, linha3, linha4, linha5, 
+                linha6, linha7, linha8, linha9, linha10, 
+                linha11, linha12, linha13, linha14, linha15, 
+                linha16, linha17
+            ].join('\n') + '\n\n';
 
             // Tabela A (customgrid_128) - Transposição com Regra Estrita
             const tabelaA = doc.getElementById('customgrid_128');
@@ -201,7 +207,7 @@
                     }
                 }
 
-                // Identificar planos presentes e não presentes
+                // Identificar planos
                 const planosRestantes = dadosExtraidos.filter(d => !planosRegra.includes(d['Plano']));
                 const todosPlanosOrdenados = [...planosRegra, ...planosRestantes.map(d => d['Plano'])];
 
@@ -220,7 +226,7 @@
                 textoFinal += '\n';
             }
 
-            // Tabela B (customgrid_69) - Cópia com Tabs e sem acentos na coluna Município
+            // Tabela B (customgrid_69) - Município sem acento
             const tabelaB = doc.getElementById('customgrid_69');
             if(tabelaB) {
                 textoFinal += "--- TABELA B (DISTRIBUIÇÃO DE VIDAS) ---\n";
@@ -229,7 +235,7 @@
                     let linhaStr = [];
                     row.querySelectorAll('th, td').forEach((cell, index) => {
                         let texto = cell.innerText.trim();
-                        // O índice 1 corresponde à coluna "Município"
+                        // Índice 1 é o Município
                         if(index === 1) {
                             texto = removerAcentos(texto);
                         }
@@ -243,7 +249,7 @@
             document.getElementById('output-text').value = textoFinal.trim();
             document.getElementById('result-section').classList.remove('hidden');
 
-            // Chamar API
+            // Chamar API da Receita
             if(cnpjLimpo) fetchCnpjApi(cnpjLimpo);
         }
 
@@ -269,11 +275,9 @@
                 
                 const data = await response.json();
                 
-                // Tratar endereços
                 const logradouro = `${data.address?.street || ''}, ${data.address?.number || ''} ${data.address?.details || ''}`.trim();
                 const cidade = `${data.address?.city || ''} - ${data.address?.state || ''}`;
 
-                // HTML Base do retorno
                 let html = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -315,7 +319,6 @@
                     </div>
                 `;
 
-                // Renderizar QSA (Quadro Societário)
                 if(data.company?.members && data.company.members.length > 0) {
                     html += `<div class="mt-8">
                                 <h3 class="text-lg font-bold text-unimedDark mb-4 border-b pb-2">Quadro Societário (QSA)</h3>
