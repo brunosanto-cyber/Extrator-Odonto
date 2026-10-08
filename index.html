@@ -165,10 +165,11 @@
             
             // Lógica do Reembolso Padrão (Linha 16)
             let linha16 = getVal('field_40');
-            const regexReembolso = /^(\d+x)\s+reembolso$/i;
-            if (regexReembolso.test(linha16)) {
-                // Inverte "2x Reembolso" para "Reembolso 2x"
-                linha16 = linha16.replace(regexReembolso, 'Reembolso $1');
+            if (linha16.trim().toLowerCase() !== 'sem reembolso') {
+                const match = linha16.match(/(\d+x)/i);
+                if (match) {
+                    linha16 = 'Reembolso ' + match[1].toLowerCase();
+                }
             }
 
             let textoFinal = [linha1, linha2, linha3, linha4, linha5, linha6, linha7, linha8, linha9, linha10, linha11, linha12, linha13, linha14, linha15, linha16].join('\n') + '\n\n';
