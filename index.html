@@ -149,7 +149,6 @@
             if (tabelaCorretores) {
                 const rows = tabelaCorretores.querySelectorAll('tr');
                 if (rows.length > 1) {
-                    // Mapeia onde estão as colunas dinamicamente para evitar erros
                     const headers = Array.from(rows[0].querySelectorAll('th, td')).map(th => th.innerText.trim().toLowerCase());
                     const colNome = headers.indexOf('nome');
                     const colTipo = headers.indexOf('tipo comissão');
@@ -194,7 +193,7 @@
             }
 
             // Linha 17: Total de Vidas
-            const linha17 = getVal('field_70');
+            const linha17 = getVal('field_70'); // Puxa o conteúdo de <span id="field_70">
 
             // Agrupa textos fixos
             let textoFinal = [
