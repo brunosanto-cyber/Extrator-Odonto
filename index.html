@@ -60,7 +60,7 @@
                 Dados Extraídos
             </h2>
             <div class="relative">
-                <textarea id="output-text" rows="15" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan whitespace-pre" readonly></textarea>
+                <textarea id="output-text" rows="16" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-unimedCyan whitespace-pre" readonly></textarea>
                 <button onclick="copyToClipboard()" class="absolute top-2 right-2 bg-unimedCyan hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition shadow">Copiar</button>
             </div>
         </div>
@@ -193,14 +193,30 @@
             }
 
             // Linha 17: Total de Vidas
-            const linha17 = getVal('field_70'); // Puxa o conteúdo de <span id="field_70">
+            const linha17 = getVal('field_70');
+
+            // Linha 18: Lógica da Congênere
+            let linha18 = "Não possui apólice odontológica";
+            const tabelaCongenere = doc.getElementById('customgrid_33');
+            if (tabelaCongenere) {
+                const rowsCongenere = tabelaCongenere.querySelectorAll('tr');
+                if (rowsCongenere.length > 1) { // Tem dados além do cabeçalho
+                    const tdsCongenere = rowsCongenere[1].querySelectorAll('td');
+                    if (tdsCongenere.length > 0) {
+                        const nomeCongenere = tdsCongenere[0].innerText.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+                        if (nomeCongenere !== '') {
+                            linha18 = "2 anos ou +";
+                        }
+                    }
+                }
+            }
 
             // Agrupa textos fixos
             let textoFinal = [
                 linha1, linha2, linha3, linha4, linha5, 
                 linha6, linha7, linha8, linha9, linha10, 
                 linha11, linha12, linha13, linha14, linha15, 
-                linha16, linha17
+                linha16, linha17, linha18
             ].join('\n') + '\n\n';
 
             // ---- TABELA A (COTAÇÃO) ----
