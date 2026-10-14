@@ -122,7 +122,7 @@
 
         function extractData(doc) {
             try {
-                // Nova função segura usando textContent (funciona melhor com DOMParser do que innerText)
+                // Função segura usando textContent para evitar problemas de leitura com DOMParser
                 const getVal = (id) => {
                     const el = doc.getElementById(id);
                     if (!el) return '';
